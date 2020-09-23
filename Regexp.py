@@ -19,17 +19,16 @@ class Regexp:
             if (re.c == a): return Epsilon()
             else: return Empty()
         if (isinstance(re, Alt)):
-            return Alt(self.derivative(a, re.l), self.derivative(a, re.r))
+            return alt(self.derivative(a, re.l), self.derivative(a, re.r))
         if (isinstance(re, Seq)):
-            left = Seq(self.derivative(a, re.l), r)
+            left = seq(self.derivative(a, re.l), re.r)
             if (nullable(re.l)):
-                return Alt(left, self.derivative(a, re.r))
+                return alt(left, self.derivative(a, re.r))
             return left
         if (isinstance(re, Star)):
-            return Seq(self.derivative(a, re.s), re.s)
+            return seq(self.derivative(a, re.s), re)
 
     
-
 class Empty(Regexp):
     def __init__(self):
         pass
@@ -44,50 +43,17 @@ class Char(Regexp):
 
 class Seq(Regexp):
     def __init__(self, l, r):
-        if (isinstance(l, Empty) or isinstance(r, Empty)):
-            self = Empty()
-        elif (isinstance(l, Epsilon)):
-            self = r
-        elif (isinstance(r, Epsilon)):
-            self = l
-        else:
-            self.l = l
-            self.r = r
+        self.l = l
+        self.r = r
 
 class Alt(Regexp):
     def __init__(self, l, r):
-        if (isinstance(r, Empty)):
-            self = l
-        elif (isinstance(l, Empty)):
-            self = r
-        elif (isinstance(r, Epsilon)):
-            if nullable(l):
-                self = l
-            else:
-                self = Alt(Epsilon, l)
-        elif (isinstance(l, Epsilon)):
-            if (nullable(r)):
-                self = r
-            else:
-                self = Alt(Epsilon, r)
-        elif l == r:
-            self = r
-        else:
-            self.l = l
-            self.r = r
-
-
+        self.l = l
+        self.r = r
 
 class Star(Regexp):
     def __init__(self, s):
-        if (isinstance(s, Epsilon)):
-            self = Epsilon()
-        elif (isinstance(s, Empty)):
-            self = Empty()
-        elif (isinstance(s, Star)):
-            self = s
-        else:
-            self.s = s
+        self.s = s
 
 def seq(l, r):
     if isinstance(l, Empty) or isinstance(r, Empty):
@@ -98,6 +64,37 @@ def seq(l, r):
         return l
     else:
         return Seq(l, r)
+
+def alt(l, r):
+    if (isinstance(r, Empty)):
+        return l
+    elif (isinstance(l, Empty)):
+        return r
+    elif (isinstance(r, Epsilon)):
+        if nullable(l):
+            return l
+        else:
+            return alt(Epsilon, l)
+    elif (isinstance(l, Epsilon)):
+        if (nullable(r)):
+            return r
+        else:
+            return alt(Epsilon, r)
+    #elif l == r:
+    #    return r
+    else:
+        return Alt(l , r)
+
+
+def star(s):
+    if (isinstance(s, Empty)):
+        return Empty()
+    elif (isinstance(s, Epsilon)):
+        return Epsilon()
+    elif (isinstance(s, Star)):
+        return s
+    else:
+        return Star(s)
 
 def nullable(re):
     if (isinstance(re, Empty) or isinstance(re, Char)):
@@ -110,8 +107,9 @@ def nullable(re):
         return nullable(re.l) and nullable(re.r)
 
 def main(args_str: List[str]):
-    reg = Star(Char('a'))
-    print(reg.match("aaaa"))
+    reg = seq(alt(Char('a'), Char('c')), Char('b'))
+    re2 = Star(Char('a'))
+    print(re2.match("aaaaaa"))
 
 if __name__ == '__main__':
     main(sys.argv[1:])
