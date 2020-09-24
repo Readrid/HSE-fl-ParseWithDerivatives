@@ -1,6 +1,8 @@
 from typing import List
 import sys
 
+sys.setrecursionlimit(100000)
+
 class Regexp:
     def match(self, w, l = None):
         if (l == None):
@@ -28,7 +30,6 @@ class Regexp:
         if (isinstance(re, Star)):
             return seq(self.derivative(a, re.s), re)
 
-    
 class Empty(Regexp):
     def __init__(self):
         pass
@@ -55,6 +56,7 @@ class Star(Regexp):
     def __init__(self, s):
         self.s = s
 
+
 def seq(l, r):
     if isinstance(l, Empty) or isinstance(r, Empty):
         return Empty()
@@ -64,6 +66,7 @@ def seq(l, r):
         return l
     else:
         return Seq(l, r)
+
 
 def alt(l, r):
     if (isinstance(r, Empty)):
@@ -80,8 +83,6 @@ def alt(l, r):
             return r
         else:
             return alt(Epsilon, r)
-    #elif l == r:
-    #    return r
     else:
         return Alt(l , r)
 
@@ -107,9 +108,12 @@ def nullable(re):
         return nullable(re.l) and nullable(re.r)
 
 def main(args_str: List[str]):
-    reg = seq(alt(Char('a'), Char('c')), Char('b'))
-    re2 = Star(Char('a'))
-    print(re2.match("aaaaaa"))
+    
+    reg = Star(Char('a')) # enter your regex here
+
+    while len(args_str) == 0:
+        args_str.append(input())
+    print(reg.match(args_str[0]))
 
 if __name__ == '__main__':
     main(sys.argv[1:])
