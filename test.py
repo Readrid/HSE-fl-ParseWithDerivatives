@@ -87,7 +87,7 @@ def testCompareRegexp():
     re2.match(long_string)
     time_delta2 = datetime.now() - last_time2
     
-    print("Compare results:", time_delta1.total_seconds() > time_delta2.total_seconds())
+    print("Comparison results:", time_delta1.total_seconds() > time_delta2.total_seconds())
 
 
 def main():
